@@ -19,17 +19,28 @@ echo  Original Template:  https://github.com/analog-green/devOps
 echo  Licensed under the MIT License.
 echo  Initial Contributor:  MTG
 echo  License:  MIT
-echo =======================================================
+echo ==============================================================================
 
 
 :: 1. WSL 배포판
+wsl -l -v | findstr /i /c:"%WSL_OS%" > nul
+if %errorlevel% neq 0 (
+    echo.
+	wsl -l
+	echo  ------------------------------
+    echo.
+    echo  [ERROR] "%WSL_OS%" not exist
+    echo.
+    pause
+    exit
+)
 wsl -d %WSL_OS% --exec true
 
 :: 2. 터미널 선택
 echo.
 echo  터미널 클라이언가 실행됩니다. (기본값: Tabby)
 echo  %TIMEOUT_SEC%초 내로 [Q]키를 누르면 PowerShell로 변경됩니다.
-echo ---------------
+echo ------------------------------
 choice /c qt /t %TIMEOUT_SEC% /d t /n > nul
 
 :: 3. 분기점
