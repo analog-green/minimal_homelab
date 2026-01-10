@@ -23,7 +23,20 @@ echo ===========================================================================
 
 
 :: 1. WSL 배포판
-wsl -l -v | findstr /i /c:"%WSL_OS%" > nul
+where wsl >nul 2>nul
+if %errorlevel% neq 0 (
+    echo.
+    echo  [ERROR] 'wsl --install' 명령을 통해 먼저 WSL을 설치해 주세요.
+	echo  ------------------------------
+    echo.
+    pause
+    exit
+) else (
+	echo.
+	echo  WSL 설치 체크 완료.
+	echo ------------------------------
+)
+wsl -d %WSL_OS% --status >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
 	wsl -l
@@ -33,6 +46,10 @@ if %errorlevel% neq 0 (
     echo.
     pause
     exit
+) else (
+	echo.
+	echo  "%WSL_OS%" 설치 체크 완료.
+	echo ------------------------------
 )
 wsl -d %WSL_OS% --exec true
 
