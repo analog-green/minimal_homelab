@@ -460,7 +460,7 @@ print_information(){
 	 Licensed under the MIT License.
 	 
 	 Initial Contributor: MTG
-	 Edit: 2026-07-23 (UTC+9)
+	 Edit: 2026-08-02 (UTC+9)
 	 ASCII art: http://patorjk.com/software/taag (Coder Mini, Straight)
 	 
 	 1) Env: wsl, ubuntu
