@@ -1,0 +1,43 @@
+x-custom-variables: &variables
+  MASTER_KEY: &master_key "__KEY__"
+  DB_URL: &db_url "postgres://postgres:__KEY__@127.0.0.1:5432/openproject"
+
+services:
+  openproject:
+    image: openproject/openproject:17
+    container_name: __NAME__
+    ports:
+      - "__PORT__:80"
+    environment:
+      SECRET_KEY_BASE: *master_key
+      DATABASE_URL: *db_url
+      PGPASSWORD: *master_key
+      POSTGRES_PASSWORD: *master_key
+      POSTGRES_DB: "openproject"
+
+      OPENPROJECT_HOCUSPOCUS__SECRET: *master_key
+      OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET: *master_key
+      OPENPROJECT_SETTINGS__DOCUMENTS__COLLABORATIVE__EDITING__SECRET: *master_key
+
+      OPENPROJECT_SEED_ADMIN_EMAIL: "admin@admin.com"
+      OPENPROJECT_SEED_ADMIN_PASSWORD: "__ADMIN_ID__"
+      OPENPROJECT_SEED_ADMIN_PASSWORD_RESET: "false"
+
+      OPENPROJECT_HOST__NAME: "__WSL_IP__:__PORT__"
+      OPENPROJECT_SETTINGS__DOCUMENTS__COLLABORATIVE__EDITING__URL: "ws://__WSL_IP__:__PORT__/hocuspocus"
+      OPENPROJECT_SETTINGS__DOCUMENTS__COLLABORATIVE__EDITING__ENABLED: "true"
+      OPENPROJECT_HOCUSPOCUS__PORT: "1234"
+      
+      OPENPROJECT_HTTPS: "false"
+      OPENPROJECT_DEFAULT__LANGUAGE: "__LANG__"
+    volumes:
+      - "__VOL_PATH__/pgdata:/var/openproject/pgdata"
+      - "__VOL_PATH__/assets:/var/openproject/assets"
+    networks:
+      - default
+    restart: always
+    
+networks:
+  default:
+    name: __NW__
+    external: true

@@ -1,0 +1,18 @@
+services:
+  onedev:
+    image: 1dev/server:latest
+    container_name: __NAME__
+    ports:
+      - "__PORT1__:6610"
+      - "__PORT2__:6611"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "__VOL_PATH__:/opt/onedev"
+    networks:
+      - default
+    restart: always
+
+networks:
+  default:
+    name: __NW__
+    external: true

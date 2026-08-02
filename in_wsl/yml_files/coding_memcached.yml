@@ -1,0 +1,14 @@
+services:
+  memcached:
+    image: memcached:latest
+    container_name: memcached
+    ports:
+      - "__PORT_1__:11211"
+      - "__PORT_2__:11211"
+      - "__PORT_4__:11211"
+    restart: always
+    
+networks:
+  default:
+    name: __NW__
+    external: true

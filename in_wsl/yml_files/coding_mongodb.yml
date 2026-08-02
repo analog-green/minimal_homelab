@@ -1,0 +1,16 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "__PORT_1__:27017"
+      - "__PORT_2__:27017"
+      - "__PORT_4__:27017"
+    volumes:
+      - "__VOL_PATH__/mongodb:/data/db"
+    restart: always
+    
+networks:
+  default:
+    name: __NW__
+    external: true

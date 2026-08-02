@@ -1,0 +1,22 @@
+services:
+  oracle:
+      image: gvenzl/oracle-free:latest
+      container_name: oracle
+      ports:
+        - "__PORT_OC_11__:1521"
+        - "__PORT_OC_12__:1521"
+        - "__PORT_OC_14__:1521"
+        - "__PORT_OC_21__:5500"
+        - "__PORT_OC_22__:5500"
+        - "__PORT_OC_24__:5500"
+      environment:
+        ORACLE_CHARACTERSET: "UTF-8"
+        ORACLE_PASSWORD: "__ADMIN_PW__"
+      volumes:
+        - "__VOL_PATH__:/opt/oracle/oradata/FREE"
+      restart: always
+
+networks:
+  default:
+    name: __NW__
+    external: true

@@ -1,0 +1,21 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:latest-jdk21
+    container_name: jenkins
+    ports:
+      - "__PORT__:8080"
+    volumes:
+      - "__VOL_PATH__/jenkins:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - nw_coding
+      - nw_etc
+    restart: unless-stopped
+    
+networks:
+  nw_coding:
+    name: __NW_CODING__
+    external: true
+  nw_etc:
+    name: __NW__
+    external: true

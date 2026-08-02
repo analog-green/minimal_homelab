@@ -1,0 +1,44 @@
+services:
+  planka:
+    container_name: __NAME1__
+    networks:
+      - nw_etc
+    image: ghcr.io/plankanban/planka:latest
+    restart: on-failure
+    volumes:
+      - __VOL_PATH__/data:/app/data
+    ports:
+      - __PORT__:1337
+    environment:
+      - BASE_URL=http://localhost:__PORT__
+      - DATABASE_URL=postgresql://postgres@postgres/planka
+      - SECRET_KEY=notsecretkey
+
+      - DEFAULT_ADMIN_EMAIL=admin@example.com
+      - DEFAULT_ADMIN_NAME=admin
+      - DEFAULT_ADMIN_USERNAME=admin
+      - DEFAULT_ADMIN_PASSWORD=__ADMIN_PW__
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    container_name: __NAME2__
+    networks:
+      - nw_etc
+    image: postgres:16-alpine
+    restart: on-failure
+    volumes:
+      - __VOL_PATH__/db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=planka
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d planka"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  nw_etc:
+    name: __NW__
+    external: true

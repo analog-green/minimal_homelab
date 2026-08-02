@@ -1,0 +1,20 @@
+services:
+  postgres:
+      image: postgres:latest
+      container_name: postgres
+      ports:
+        - "__PORT_PG_1__:5432"
+        - "__PORT_PG_2__:5432"
+        - "__PORT_PG_4__:5432"
+      environment:
+        POSTGRES_DB: "postgres"
+        POSTGRES_USER: "postgres"
+        POSTGRES_PASSWORD: "__ADMIN_PW__"
+      volumes:
+        - "__VOL_PATH__:/var/lib/postgresql"
+      restart: always
+
+networks:
+  default:
+    name: __NW__
+    external: true

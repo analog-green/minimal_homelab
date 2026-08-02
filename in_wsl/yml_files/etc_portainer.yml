@@ -1,0 +1,23 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    ports:
+      - "__PORT1__:9000"
+      - "__PORT2__:9443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "__VOL_PATH__/portainer:/data"
+    networks:
+      - nw_coding
+      - nw_etc
+    restart: always
+
+# 기존에 이미 생성되어 있는 외부 네트워크들을 참조
+networks:
+  nw_coding:
+    name: __NW_CODING__
+    external: true
+  nw_etc:
+    name: __NW__
+    external: true

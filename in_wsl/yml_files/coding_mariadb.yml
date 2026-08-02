@@ -1,0 +1,21 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    ports:
+      - "__PORT_MARIA_1__:3306"
+      - "__PORT_MARIA_2__:3306"
+      - "__PORT_MARIA_4__:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "__ADMIN_PW__"
+    volumes:
+      - "__VOL_PATH__/mariadb:/var/lib/mysql"
+      - "__VOL_PATH__/mariadb_conf:/etc/mysql/conf.d"
+    networks:
+      - default
+    restart: always
+
+networks:
+  default:
+    name: __NW__
+    external: true
