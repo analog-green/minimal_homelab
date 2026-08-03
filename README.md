@@ -174,5 +174,5 @@ Manual backup: Saturday-D01_1735.tar.gz
 ```
 ---
 ---
-# 3. Tip
+# 4. Tip
 * install.sh/uninstall.sh 실행시, 일정한 구간마다 ``log.log``와 ``docker.log``에 로그가 저장된다.
