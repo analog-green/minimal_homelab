@@ -39,7 +39,7 @@ Retype new password:
 minimal_homelab@dummy_host_name:~$ sudo usermod -aG sudo $USER
 [sudo] password for minimal_homelab:
 minimal_homelab@dummy_host_name:~$ newgrp sudo
-minimal_homelab@dummy_host_name:~$ echo 'minimal_homelab ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers > /dev/null
+minimal_homelab@dummy_host_name:~$ echo "${USER} ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers > /dev/null
 ```
 
 **ⓒ sudo vi /etc/wsl.conf**
@@ -87,15 +87,15 @@ minimal_homelab@ubuntu24:/mnt/c/Users/Administrator$ cd ~;pwd
 ---
 # 3. Insatll
 ## 1) download
-* git패키지 설치를 안 하는쪽으로 하고싶다? ``wget -qO- https://github.com/analog-green/minimal_homelab/archive/refs/heads/main.tar.gz | tar -xz;cd minimal_homelab-main``
+* git패키지 설치를 안 하는쪽으로 하고싶다? ``wget -qO- https://github.com/analog-green/minimal_homelab/archive/refs/heads/main.tar.gz | tar -xz;cd minimal_homelab-main/in_wsl``
 ```shell
-minimal_homelab@ubuntu22:~$ sudo apt install -y git;
-minimal_homelab@ubuntu22:~$ sudo git clone --depth 1 https://github.com/analog-green/minimal_homelab.git;cd minimal_homelab;
+minimal_homelab@ubuntu24:~$ sudo apt install -y git;
+minimal_homelab@ubuntu24:~$ sudo git clone --depth 1 https://github.com/analog-green/minimal_homelab.git;cd minimal_homelab/in_wsl;
 ```
 
 ## 2) install
 ```shell
-minimal_homelab@ubuntu22:~$ sudo bash install.sh
+minimal_homelab@ubuntu24:~$ sudo bash install.sh
 ```
 **(gvenzl) oracle용 추가 설정**
 ```shell
@@ -127,6 +127,27 @@ Disconnected from Oracle AI Database 26ai Free Release 23.26.2.0.0 - Develop, Le
 Version 23.26.2.0.0
 ```
 
+```shell
+minimal_homelab@ubuntu24:/dev_minimal_homelab/data$ pwd;ls -al
+/dev_minimal_homelab/data
+total 56
+drwxr-xr-x 14 999               systemd-journal 4096 Aug  6 21:54 .
+drwxr-xr-x  4 minimal_homelab   minimal_homelab 4096 Aug  6 21:40 ..
+drwxr-xr-x  3 minimal_homelab   minimal_homelab 4096 Aug  6 21:53 jenkins     
+drwxr-xr-x  5 999               systemd-journal 4096 Aug  6 21:47 mariadb     
+drwxr-xr-x  2 root              root            4096 Aug  6 21:46 mariadb_conf
+drwxr-xr-x  2 999               systemd-journal 4096 Aug  6 21:51 memcached   
+drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:51 mongodb     
+drwxr-xr-x 13 999               systemd-journal 4096 Aug  6 21:53 onedev      
+drwxr-xr-x  4 999               systemd-journal 4096 Aug  6 21:43 openproject 
+drwxr-xr-x  4 54321             54321           4096 May 31 05:56 oracle      
+drwxr-xr-x  4 999               systemd-journal 4096 Aug  6 21:46 planka      
+drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:54 portainer   
+drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:50 postgres    
+drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:51 redis
+```
+
+
 ## 3. backup
 * ``gzip -9``옵션을 통해 최대압축 처리를 한 아카이빙 스크립트.
 * 호환성을 위해 tar.gz 기준으로 처리.
@@ -151,8 +172,9 @@ WantedBy=multi-user.target
 
 **ⓑ 데몬 서비스 등록**
 ```shell
-sudo systemctl daemon-reload
-sudo systemctl start backup-on-boot.service;sudo systemctl enable backup-on-boot.service
+sudo systemctl daemon-reload;
+sudo systemctl enable backup-on-boot.service;
+sudo systemctl start backup-on-boot.service;
 ```
 
 ## 2) 크론탭을 통한 스케쥴링(Scheduling)
@@ -167,7 +189,7 @@ sudo systemctl start backup-on-boot.service;sudo systemctl enable backup-on-boot
 ## 3) 수동
 * install.sh을 1번 이상 실행해서, 관련된 파일과 경로가 존재해야.
 ```shell
-minimal_homelab@ubuntu22:~$ sudo bash /backup/backup_homelab_data.sh
+minimal_homelab@ubuntu24:~$ sudo bash /backup/backup_homelab_data.sh
 ... ... ...
 ---------------------------------------------------
 Manual backup: Saturday-D01_1735.tar.gz

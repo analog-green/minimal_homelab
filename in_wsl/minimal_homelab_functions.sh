@@ -81,9 +81,9 @@ init_directory(){
 
 	#set -x;
 	sudo mkdir -p "${DIR_BACK}";
-	sudo cp minimal_homelab_functions.sh "${DIR_BACK}/"
-	sudo chmod 711 "minimal_homelab_functions.sh"
-	sudo chmod 711 "${DIR_BACK}/minimal_homelab_functions.sh"
+	sudo cp backup_homelab_data.sh "${DIR_BACK}/"
+	sudo chmod 711 "backup_homelab_data.sh"
+	sudo chmod 711 "${DIR_BACK}/backup_homelab_data.sh"
 
 	sudo mkdir -p "${DIR_HOMELAB}";sudo mkdir -p "${DIR_HOMELAB_DATA}";sudo mkdir -p "${DIR_HOMELAB_YML}";
 	sudo mkdir -p "${DIR_WROK}";
@@ -141,7 +141,7 @@ make_log(){
 }
 make_docker_log(){
 	local docker_name=$1;
-	docker logs -f --tail 15 "${docker_name}" >> ./docker.log 2>&1
+	docker logs --tail 20 "${docker_name}" >> ./docker.log 2>&1
 	echo "=================================" >> ./docker.log 2>&1
 }
 # ==============================================================================
@@ -241,6 +241,7 @@ install_coding_rdbms(){
 		docker compose -f "${yml_file}" up -d;
 		echo -e "${ANSI_BOX_BASIC}init account info: ServerHost=localhost / Username=root / Password=${ADMIN_PW} ${ANSI_END}";
 		make_log "mariadb" "ServerHost=localhost / Username=root / Password=${ADMIN_PW}"
+		make_docker_log "mariadb"
 	else
 		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/mariadb";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/mariadb";
 		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/mariadb_conf";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/mariadb_conf";
@@ -264,6 +265,19 @@ install_coding_rdbms(){
 		docker compose -f "${yml_file}" up -d;
 		echo -e "${ANSI_BOX_BASIC}init account info: Host=localhost / Database=FREE / Username=system / Password=${ADMIN_PW} ${ANSI_END}";
 		make_log "oracle" "Host=localhost / Database=FREE / Username=system / Password=${ADMIN_PW}"
+		make_docker_log "oracle"
+
+		# echo -e "${ANSI_ETC} ready to oracle DB (about 3min+) ${ANSI_END}"
+		# until docker exec -i oracle sqlplus -s / as sysdba <<< "SET HEAD OFF FEEDBACK OFF; SELECT open_mode FROM v\$pdbs WHERE name = 'FREEPDB1'; EXIT;" | grep -q "READ WRITE"
+		# do
+		# 	echo -e "${ANSI_ETC} ... ... ... ${ANSI_END}"
+		# 	sleep 10
+		# done
+		# docker exec -i oracle sqlplus -s / as sysdba <<-EOF
+		# 	ALTER USER SYSTEM IDENTIFIED BY "${ADMIN_PW}";
+		# 	ALTER USER SYSTEM ACCOUNT UNLOCK;
+		# 	EXIT;
+		# EOF
 	else
 		sudo chown -R 54321:54321 "${DIR_HOMELAB_DATA}/oracle";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/oradata";
 	fi
@@ -282,6 +296,7 @@ install_coding_rdbms(){
 		docker compose -f "${yml_file}" up -d;
 		echo -e "${ANSI_BOX_BASIC}init account info: Host=localhost / DB=postgres / user=postgres / pw=${ADMIN_PW} ${ANSI_END}";
 		make_log "postgres" "Host=localhost / DB=postgres / user=postgres / pw=${ADMIN_PW}"
+		make_docker_log "postgres"
 	else
 		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/postgres";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/postgres";
 	fi
@@ -354,6 +369,7 @@ install_version_control(){
 		is_alive_webpage "http://localhost:2200" "http://localhost:2200"
 		echo -e "${ANSI_BOX_BASIC}account first setting PLZ ${ANSI_END}";
 		make_log "onedev" "http://localhost:2200"
+		make_docker_log "onedev"
     fi
 	#	END. openproject
 }
@@ -376,6 +392,7 @@ install_automation(){
 		init_pass=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null)
 		echo -e "${ANSI_BOX_BASIC}init account info: init_pass=${init_pass} ${ANSI_END}";
 		make_log "jenkins" "http://${WSP_IP}:2380/login   init_pass=${init_pass}"
+		make_docker_log "jenkins"
     fi
 }
 install_plan(){
@@ -404,6 +421,7 @@ install_plan(){
 		is_alive_webpage "http://${WSP_IP}:2100" "http://${WSP_IP}:2100"
 		echo -e "${ANSI_BOX_BASIC}init account info: admin / ${ADMIN_PW} ${ANSI_END}";
 		make_log "openproject" "admin/${ADMIN_PW}	http://${WSP_IP}:2100"
+		make_docker_log "openproject"
 	else
 		sudo chown -R 1000:1000 "${DIR_HOMELAB_DATA}/openproject/assets";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/openproject/assets"
 		sudo chown -R 102:102 "${DIR_HOMELAB_DATA}/openproject/pgdata";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/openproject/pgdata"
@@ -434,6 +452,7 @@ install_plan(){
 		is_alive_webpage "http://localhost:2101" "http://localhost:2101"
 		echo -e "${ANSI_BOX_BASIC}init account info: admin / ${ADMIN_PW} ${ANSI_END}";
 		make_log "planka" "${ADMIN_ID}/${ADMIN_PW}	http://localhost:2101"
+		make_docker_log "planka"
 	else
 		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/data";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/planka/data"
 		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/db-data";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/planka/db-data"
