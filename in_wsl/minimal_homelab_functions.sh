@@ -412,6 +412,7 @@ install_plan(){
 		sed -i "s|__KEY__|${random_key}|g" "${yml_file}";
 		sed -i "s|__NAME__|openproject|g" "${yml_file}";
 		sed -i "s|__PORT__|2100|g" "${yml_file}";
+		sed -i "s|__ADMIN_PW__|${ADMIN_PW}|g" "${yml_file}";
 		sed -i "s|__WSL_IP__|${WSP_IP}|g" "${yml_file}";
 		sed -i "s|__LANG__|ko|g" "${yml_file}";
 		sed -i "s|__VOL_PATH__|${DIR_HOMELAB_DATA}/openproject|g" "${yml_file}";

@@ -135,7 +135,7 @@ drwxr-xr-x 14 999               systemd-journal 4096 Aug  6 21:54 .
 drwxr-xr-x  4 minimal_homelab   minimal_homelab 4096 Aug  6 21:40 ..
 drwxr-xr-x  3 minimal_homelab   minimal_homelab 4096 Aug  6 21:53 jenkins     
 drwxr-xr-x  5 999               systemd-journal 4096 Aug  6 21:47 mariadb     
-drwxr-xr-x  2 root              root            4096 Aug  6 21:46 mariadb_conf
+drwxr-xr-x  2 999               systemd-journal 4096 Aug  6 21:46 mariadb_conf
 drwxr-xr-x  2 999               systemd-journal 4096 Aug  6 21:51 memcached   
 drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:51 mongodb     
 drwxr-xr-x 13 999               systemd-journal 4096 Aug  6 21:53 onedev      
