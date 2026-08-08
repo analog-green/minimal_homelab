@@ -85,7 +85,7 @@ minimal_homelab@ubuntu24:/mnt/c/Users/Administrator$ cd ~;pwd
 ```
 ---
 ---
-# 3. Insatll
+# 3. Install
 ## 1) download
 * git패키지 설치를 안 하는쪽으로 하고싶다? ``wget -qO- https://github.com/analog-green/minimal_homelab/archive/refs/heads/main.tar.gz | tar -xz;cd minimal_homelab-main/in_wsl``
 ```shell
