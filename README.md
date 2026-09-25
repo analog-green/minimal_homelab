@@ -1,10 +1,11 @@
 # 1. Info
+**ⓐ 프로젝트 정보**
 * Copyright ©️ 2026 https://github.com/analog-green/minimal_minimal_homelab
 * Licensed under the MIT License.
  
 ```shell
  1) Env: wsl, ubuntu
-	Tested: Ubuntu-26.04, Ubuntu-24.04, Ubuntu-22.04
+	Tested: Ubuntu-24.04, Ubuntu-22.04
  2) Home Lab 사이즈인 devOps세팅으로 프로그래밍&설계에 집중 할 시간을 확보.
  3) DevOps에 유용한 자동화 스크립트를 공개 템플릿으로 제공.
  4) Port number rule
@@ -13,11 +14,19 @@
  5) Encoding: UTF-8
 ```
 * Initial Contributor: MTG
-* Edit: 2026-08-02 (UTC+9)
+* Edit: 2026-09-25 (UTC+9)
+* Version: 0.9.2 
 * ASCII art: http://patorjk.com/software/taag (Coder Mini, Straight)
----
----
-# 2. WSL
+
+**ⓑ 기능 소개**
+* 원터치로 토이프로젝트 개발환경 구축: 기획, 코딩, 문서처리, 빌드, 배포 등등에 엄선된 범용성이 높은 툴들을 WSL에서 한번 설치완료.
+* 반자동 백업 1종과 수동 백업 1종: wsl부팅직후 데몬 서비스를 통한 요일별 백업, 백업 스크립트 수동 실행
+* WSL환경에서 사용 및 수정이 용이한 쉘 스크립트
+------
+# 2. start_service_wsl.bat
+* ``C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp``이나 ``C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup``에 start_service_wsl.bat를 저장 
+------
+# 3. WSL
 * 아래의 예시를 보고 리눅스 시스템 파일들을 수정하고서 터미널을 재접속.
 * 중간에 실수했다고요? 파워쉘이나 다른 CMD에서 ``wsl --unregister Ubuntu-24.04`` 로 새출발. 디지털의 장점이죠.
 * wsl이 이미 갖춰진 상태이면 ``3. Insatll``로 진행가능.
@@ -83,9 +92,8 @@ PS C:\Users\Administrator> wsl -d Ubuntu-24.04
 minimal_homelab@ubuntu24:/mnt/c/Users/Administrator$ cd ~;pwd
 /home/minimal_homelab
 ```
----
----
-# 3. Install
+------
+# 4. Insatll
 ## 1) download
 * git패키지 설치를 안 하는쪽으로 하고싶다? ``wget -qO- https://github.com/analog-green/minimal_homelab/archive/refs/heads/main.tar.gz | tar -xz;cd minimal_homelab-main/in_wsl``
 ```shell
@@ -97,7 +105,7 @@ minimal_homelab@ubuntu24:~$ sudo git clone --depth 1 https://github.com/analog-g
 ```shell
 minimal_homelab@ubuntu24:~$ sudo bash install.sh
 ```
-**(gvenzl) oracle용 추가 설정**
+**(optional) oracle initialization**
 ```shell
 $ docker exec -it oracle bash
 bash-4.4$ ls
@@ -146,15 +154,15 @@ drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:54 portainer
 drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:50 postgres    
 drwxr-xr-x  3 999               systemd-journal 4096 Aug  6 21:51 redis
 ```
+------
+# 5. Backup
 
-
-## 3. backup
-* ``gzip -9``옵션을 통해 최대압축 처리를 한 아카이빙 스크립트.
 * 호환성을 위해 tar.gz 기준으로 처리.
 
-## 1) 데몬 서비스를 통한 부팅직후 백업
+## 1) 데몬 서비스 백업
 **ⓐ sudo vi /etc/systemd/system/backup-on-boot.service**
 * 네트워크가 준비된 후에 실행되도록 설정
+* ``gzip -5``옵션으로 처리됨
 ```shell
 [Unit]
 Description=Run Custom Backup Script on Boot
@@ -162,7 +170,8 @@ After=network.target docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/backup/backup_homelab_data.sh "by_service"
+ExecStart=/backup/backup_homelab.sh "by_service"
+StandardError=append:/backup/daemon_stderr.log
 User=root
 Group=root
 
@@ -177,24 +186,73 @@ sudo systemctl enable backup-on-boot.service;
 sudo systemctl start backup-on-boot.service;
 ```
 
-## 2) 크론탭을 통한 스케쥴링(Scheduling)
-* ``sudo vi /etc/crontab``를 통해 편집.
-* 스크립트 파일을 수동으로 복구한경우, ``sudo chmod 711 /backup/minimal_homelab_functions.sh``
+## 2) 수동
+* install.sh을 1번 이상 실행해서, 관련된 파일과 경로가 존재해야.
+* ``gzip -7``옵션으로 
 ```shell
+minimal_homelab@ubuntu24:~$ sudo bash /backup/backup_homelab.sh
+Take a break time - pause oracle mongodb
+o... ... ...-r-- 1 root root 847812632 Sep 24 21:29 /backup/Thursday-H2128.tar.gz
+-rw-r--r-- 1 root root 809M Sep 24 21:29 /backup/Thursday-H2128.tar.gz
 ... ... ...
-0  *    * * *   root    /backup/backup_homelab_data.sh "by_crontab" >> /backup/backup.log 2>&1
-#
+Manual backup: Thursday-H2128.tar.gz
+```
+------
+# 6. Tip
+
+## 1) openproject PW 분실
+
+* ID: admin
+* PW: 영문 소문자, 영문 대문자, 숫자, 특수문자가 전부 포함되어야
+* 아래의 과정이 번거롭다면, ``sudo docker exec -i openproject /app/bin/rails runner -e production "u = User.find_by(login: 'admin'); u.password = 'my_new_force_PW2026'; u.password_confirmation = 'my_new_force_PW2026'; u.force_password_change = false; u.save!"`` 에서  my_new_force_PW2026 부분을 원하는 PW로
+```shell
+minimal_homelab@ubuntu24:~$ docker exec -it openproject /app/bin/rails console -e production
+... ... ...
+open-project(prod):001> u = User.find_by(login: 'admin')
+=> 
+... ... ...
+ admin: true,
+... ... ...
+open-project(prod):002> u.password = 'my_new_force_PW2026'
+=> "my_new_force_PW2026"
+open-project(prod):003> u.password_confirmation = 'my_new_force_PW2026'
+=> "my_new_force_PW2026"
+open-project(prod):004> u.force_password_change = false
+=> false
+open-project(prod):005> u.save!
+=> true
+open-project(prod):006> exit
 ```
 
-## 3) 수동
-* install.sh을 1번 이상 실행해서, 관련된 파일과 경로가 존재해야.
+
+## 2) openproject 백업 및 복구
+* openproject 백업 기능을 통해 ``openproject.sql`` 가 생성되는데, 첨부 파일이 존재함에도 단일 SQL 파일인 점으로 보아 바이너리(BLOB) 로 테이블에 저장으로 추정.
+* 아래의 명령어를 통해 openproject의 백업메뉴로 접속하거나 수동으로 접속후, 백업토근 발급등을 거쳐서 `openproject-backupYYYYMMDD-xxx-xxxxxx.zip`를 다운로드
 ```shell
-minimal_homelab@ubuntu24:~$ sudo bash /backup/backup_homelab_data.sh
-... ... ...
----------------------------------------------------
-Manual backup: Saturday-D01_1735.tar.gz
+minimal_homelab@ubuntu24:~$ cmd.exe /c start http://$(hostname -I | awk '{print $1}'):2100/admin/backups
 ```
----
----
-# 4. Tip
-* install.sh/uninstall.sh 실행시, 일정한 구간마다 ``log.log``와 ``docker.log``에 로그가 저장된다.
+* openproject 웹페이지에서 받은 `openproject-backupYYYYMMDD-xxx-xxxxxx.zip`를 wsl 디렉토리에서 압축해제  
+(예시: ``/home/minimal_homelab/openproject.sql``)
+* 만약을 위해 기존 data폴더는 사본을 만듭니다.
+
+```shell
+sudo cp -r /dev_minimal_homelab/data/openproject /dev_minimal_homelab/data/openproject_prev
+
+sudo docker exec -i openproject psql -h 127.0.0.1 -U postgres -d postgres -c "ALTER DATABASE openproject WITH ALLOW_CONNECTIONS false;"
+sudo docker exec -i openproject psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'openproject' AND pid <> pg_backend_pid();"
+sudo docker exec -i openproject psql -h 127.0.0.1 -U postgres -d postgres -c "DROP DATABASE IF EXISTS openproject;"
+sudo docker exec -i openproject psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE DATABASE openproject OWNER postgres;"
+
+sudo docker exec -i openproject psql -h 127.0.0.1 -U postgres -d openproject < /home/minimal_homelab/openproject.sql
+sudo chown -R 1000:1000 /dev_minimal_homelab/data/openproject/assets
+
+sudo docker exec -it openproject /app/bin/rails db:migrate -e production;sudo docker exec -it openproject /app/bin/rails db:migrate RAILS_ENV=production;
+sudo docker exec -i openproject /app/bin/rails runner -e production "u = User.find_by(login: 'admin'); u.password = 'my_new_force_PW2026'; u.password_confirmation = 'my_new_force_PW2026'; u.force_password_change = false; u.save!"
+
+docker restart openproject
+```
+
+
+## 3) etc.
+* install.sh과 uninstall.sh 실행시, 일정한 구간마다 ``log.log``와 ``docker.log``에 로그가 저장된다.
+

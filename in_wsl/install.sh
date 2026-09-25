@@ -37,7 +37,7 @@ while true; do
 	make_network;
 	echo -e "----------";
 	if [[ ${LOWER_MENU_INPUT} -eq 1 ]]; then
-		make_log "ready to install type" "${LOWER_MENU_INPUT}	Plan       : openproject-17, PLANKA(Community)"
+		make_log "ready to install type" "${LOWER_MENU_INPUT}	Plan       : openproject-17"
 		install_plan;
 	elif [[ ${LOWER_MENU_INPUT} -eq 2 ]]; then
 		make_log "ready to install type" "${LOWER_MENU_INPUT}	Coding     : git, git server, subversion, openjdk-21, dotnet-sdk-10, RDBMS, NoSQL"
@@ -75,7 +75,7 @@ while true; do
 	fi
 
 	echo "";
-	print_docker_ps;
+	print_docker_process;
 done
 
 echo -e "${ANSI_ETC}  ✅ FIN ${ANSI_END}";

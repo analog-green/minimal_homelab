@@ -36,8 +36,8 @@ while true; do
 	make_log "ready to uninsatll" "${LOWER_MENU_INPUT}"
 	if [[ ${LOWER_MENU_INPUT} -eq 1 ]]; then
         clear_docker "openproject"
-        clear_docker "planka"
-        clear_docker "planka-db"
+        # clear_docker "planka"
+        # clear_docker "planka-db"
 	elif [[ ${LOWER_MENU_INPUT} -eq 2 ]]; then
 		clear_docker "onedev"
 
@@ -64,8 +64,8 @@ while true; do
         clear_docker "portainer"
 	elif [[ ${LOWER_MENU_INPUT} == "all" ]]; then
         clear_docker "openproject"
-        clear_docker "planka"
-        clear_docker "planka-db"
+        # clear_docker "planka"
+        # clear_docker "planka-db"
 
 		clear_docker "mariadb"
         clear_docker "oracle"
@@ -83,7 +83,7 @@ while true; do
 	fi
 
 	echo "";
-	print_docker_ps;
+	print_docker_process;
 done
 
 echo -e "${ANSI_ETC}  ✅ FIN ${ANSI_END}";

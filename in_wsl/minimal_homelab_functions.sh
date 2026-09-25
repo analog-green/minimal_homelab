@@ -61,7 +61,7 @@ is_alive_webpage(){
 	local base_url=$1;
 	local init_url=$2;
 
-	for i in {1..15}; do
+	for i in {1..180}; do
 		curl -k -s "${base_url}" > /dev/null
 		if [ $? -eq 0 ]; then
 			echo "web page ready	${init_url}"
@@ -69,6 +69,8 @@ is_alive_webpage(){
 		fi
 		sleep 1
 	done
+
+	echo "⚠️ 웹페이지 준비가 지연됐습니다. 완료후에 재접속바랍니다.	${init_url}"
 
 	return ${BASH_FALSE}
 }
@@ -267,17 +269,36 @@ install_coding_rdbms(){
 		make_log "oracle" "Host=localhost / Database=FREE / Username=system / Password=${ADMIN_PW}"
 		make_docker_log "oracle"
 
-		# echo -e "${ANSI_ETC} ready to oracle DB (about 3min+) ${ANSI_END}"
-		# until docker exec -i oracle sqlplus -s / as sysdba <<< "SET HEAD OFF FEEDBACK OFF; SELECT open_mode FROM v\$pdbs WHERE name = 'FREEPDB1'; EXIT;" | grep -q "READ WRITE"
-		# do
-		# 	echo -e "${ANSI_ETC} ... ... ... ${ANSI_END}"
-		# 	sleep 10
-		# done
-		# docker exec -i oracle sqlplus -s / as sysdba <<-EOF
-		# 	ALTER USER SYSTEM IDENTIFIED BY "${ADMIN_PW}";
-		# 	ALTER USER SYSTEM ACCOUNT UNLOCK;
-		# 	EXIT;
-		# EOF
+		echo -e "${ANSI_ETC} ready to oracle DB (about 3min+) ${ANSI_END}"
+		echo -e "${ANSI_ETC} (자동 활성화를 취소하려면 아무키나 누르세요) ${ANSI_END}"
+		CANCELED=false
+		FINISHED=false;
+
+		while true; do
+			docker exec -i oracle sqlplus -s / as sysdba <<< "exit" > /dev/null 2>&1
+
+			if docker logs --tail 5 oracle 2>&1 | grep -qi "FREEPDB1 opened read write"; then
+				echo -e "${ANSI_ETC} oracle DB account ready! ${ANSI_END}"
+				FINISHED=true
+				break
+			fi
+			if read -t 3 -n 1 -s; then
+				# 키 입력  감지
+				echo -e "${ANSI_ETC} oracle DB setting canceled. readme.md의 '(gvenzl) oracle initialization'참조 ${ANSI_END}"
+				CANCELED=true
+				break
+			fi
+
+			echo -e "${ANSI_ETC} ... ... ... ${ANSI_END}"
+			sleep 3
+		done
+
+		if [ "$FINISHED" = true ] && [ "$CANCELED" = false ]; then
+			echo -e "${ANSI_ETC} ready to sysdba... ${ANSI_END}"
+			docker exec -i oracle sqlplus -s / as sysdba <<< "ALTER USER SYSTEM IDENTIFIED BY \"${ADMIN_PW}\"; ALTER USER SYSTEM ACCOUNT UNLOCK;" > /dev/null 2>&1
+			echo -e "${ANSI_BASIC} oracle DB complete ${ANSI_END}"
+			make_docker_log "oracle"
+		fi
 	else
 		sudo chown -R 54321:54321 "${DIR_HOMELAB_DATA}/oracle";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/oradata";
 	fi
@@ -396,7 +417,7 @@ install_automation(){
     fi
 }
 install_plan(){
-	echo -e "${ANSI_BASIC}Plan: openproject, planka ${ANSI_END}"
+	echo -e "${ANSI_BASIC}Plan: openproject ${ANSI_END}"
 	local is_running=$(is_running_container "openproject")
 
     if [[ "${is_running}" -eq "${BASH_FALSE}" ]]; then
@@ -409,6 +430,7 @@ install_plan(){
 		sudo chmod 666 /var/run/docker.sock;
 
 		local random_key=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32);# leng=32
+		#ENCODED_ADMIN_PW=$(echo "${ADMIN_PW}" | sed -e 's/@/%40/g' -e 's/:/%3A/g' -e 's/\//%2F/g' -e 's/#/%23/g')
 		sed -i "s|__KEY__|${random_key}|g" "${yml_file}";
 		sed -i "s|__NAME__|openproject|g" "${yml_file}";
 		sed -i "s|__PORT__|2100|g" "${yml_file}";
@@ -433,31 +455,31 @@ install_plan(){
 	#	END. openproject
 
 
-	is_running=$(is_running_container "planka")
-    if [[ "${is_running}" -eq "${BASH_FALSE}" ]]; then
-		local yml_file=$(make_devops_directory "planka" "plan_planka")
+	# is_running=$(is_running_container "planka")
+    # if [[ "${is_running}" -eq "${BASH_FALSE}" ]]; then
+	# 	local yml_file=$(make_devops_directory "planka" "plan_planka")
 
-		sudo mkdir -p "${DIR_HOMELAB_DATA}/planka/data"
-		sudo mkdir -p "${DIR_HOMELAB_DATA}/planka/db-data"
-		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/data";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/planka/data"
-		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/db-data";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/planka/db-data"
+	# 	sudo mkdir -p "${DIR_HOMELAB_DATA}/planka/data"
+	# 	sudo mkdir -p "${DIR_HOMELAB_DATA}/planka/db-data"
+	# 	sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/data";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/planka/data"
+	# 	sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/db-data";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/planka/db-data"
 
-		sed -i "s|__NAME1__|planka|g" "${yml_file}";
-		sed -i "s|__NAME2__|planka-db|g" "${yml_file}";
-		sed -i "s|__PORT__|2101|g" "${yml_file}";
-		sed -i "s|__ADMIN_PW__|${ADMIN_PW}|g" "${yml_file}";
-		sed -i "s|__VOL_PATH__|${DIR_HOMELAB_DATA}/planka|g" "${yml_file}";
-		sed -i "s|__NW__|${NW}|g" "${yml_file}";
+	# 	sed -i "s|__NAME1__|planka|g" "${yml_file}";
+	# 	sed -i "s|__NAME2__|planka-db|g" "${yml_file}";
+	# 	sed -i "s|__PORT__|2101|g" "${yml_file}";
+	# 	sed -i "s|__ADMIN_PW__|${ADMIN_PW}|g" "${yml_file}";
+	# 	sed -i "s|__VOL_PATH__|${DIR_HOMELAB_DATA}/planka|g" "${yml_file}";
+	# 	sed -i "s|__NW__|${NW}|g" "${yml_file}";
 
-		docker compose -f "${yml_file}" up -d;
-		is_alive_webpage "http://localhost:2101" "http://localhost:2101"
-		echo -e "${ANSI_BOX_BASIC}init account info: admin / ${ADMIN_PW} ${ANSI_END}";
-		make_log "planka" "${ADMIN_ID}/${ADMIN_PW}	http://localhost:2101"
-		make_docker_log "planka"
-	else
-		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/data";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/planka/data"
-		sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/db-data";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/planka/db-data"
-    fi
+	# 	docker compose -f "${yml_file}" up -d;
+	# 	is_alive_webpage "http://localhost:2101" "http://localhost:2101"
+	# 	echo -e "${ANSI_BOX_BASIC}init account info: admin / ${ADMIN_PW} ${ANSI_END}";
+	# 	make_log "planka" "${ADMIN_ID}/${ADMIN_PW}	http://localhost:2101"
+	# 	make_docker_log "planka"
+	# else
+	# 	sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/data";sudo chmod -R 755 "${DIR_HOMELAB_DATA}/planka/data"
+	# 	sudo chown -R 999:999 "${DIR_HOMELAB_DATA}/planka/db-data";sudo chmod -R 700 "${DIR_HOMELAB_DATA}/planka/db-data"
+    # fi
 }
 # ==============================================================================
 # print_xxx
@@ -480,10 +502,12 @@ print_information(){
 	 Licensed under the MIT License.
 	 
 	 Initial Contributor: MTG
-	 Edit: 2026-08-02 (UTC+9)
+	 Edit: 2026-09-25 (UTC+9)
+	 Version: 0.9.2
 	 ASCII art: http://patorjk.com/software/taag (Coder Mini, Straight)
 	 
 	 1) Env: wsl, ubuntu
+	    Tested: Ubuntu-24.04, Ubuntu-22.04
 	 2) Home Lab 사이즈인 devOps세팅에서 프로그래밍&설계에 집중 할 시간을 확보용도.
 	    DevOps에 유용한 자동화 스크립트 공개 템플릿으로 제공.
 	 3) Port number rule
@@ -496,7 +520,7 @@ print_information(){
 print_menu(){
 	echo -e "";
 	echo -e "${ANSI_WIP}  🔔 Tool list ${ANSI_END}";
-	echo -e "  1  Plan       : openproject-17, PLANKA(Community)
+	echo -e "  1  Plan       : openproject-17
   2  Coding     : git, git server, subversion, openjdk-21, dotnet-sdk-10, RDBMS, NoSQL
   3  Build      : git server, jenkins(jdk21)
   4  Test       : jenkins(jdk21)
@@ -511,7 +535,7 @@ print_menu(){
 ${ANSI_ETC}  IS_DOCKER_CLEAN: ${IS_DOCKER_CLEAN} ${ANSI_END}
 ${ANSI_ETC}  DIR_HOMELAB_DATA: ${DIR_HOMELAB_DATA} ${ANSI_END}"
 }
-print_docker_ps(){
+print_docker_process(){
 	echo -e "${ANSI_WIP}  🔔 현재 구동중인 도커 컨테이너 목록 ${ANSI_END}";
 	echo -e "${ANSI_BOX_BASIC} Name \t\t\t Port(s)\t\t NW Bridge \t\t Create ${ANSI_END}";
 	docker ps --format "{{.Names}}\t{{.Ports}}\t{{.CreatedAt}}" | while read -r line; do                       
