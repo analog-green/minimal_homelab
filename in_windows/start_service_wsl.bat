@@ -64,7 +64,7 @@ echo  start terminal client (default: Tabby)
 echo ------------------------------
 
 :WITH_TABBY
-if exist "%LOCALAPPDATA%\Programs\Tabby\Tabby.exe" (
+if not exist "%LOCALAPPDATA%\Programs\Tabby\Tabby.exe" (
     echo  [ERROR] Tabby not exist
     goto WITH_PS
 )
